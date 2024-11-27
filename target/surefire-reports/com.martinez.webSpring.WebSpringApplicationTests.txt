@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.martinez.webSpring.WebSpringApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.110 s -- in com.martinez.webSpring.WebSpringApplicationTests
