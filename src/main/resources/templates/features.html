@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <title>Features</title>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const userTable = document.getElementById("user-table");
+
+        const fetchUsers = () => {
+          fetch("/api/users")
+            .then((response) => response.json())
+            .then((data) => {
+              userTable.querySelector("tbody").innerHTML = ""; // Clear existing rows
+              data.forEach((user) => addUserRow(user));
+            })
+            .catch((error) => console.error("Error fetching users:", error));
+        };
+
+        const addUserRow = (user) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>
+              <button class="btn btn-warning update-btn" 
+                data-bs-toggle="modal" 
+                data-bs-target="#updateModal" 
+                data-id="${user.id}" 
+                data-name="${user.name}" 
+                data-email="${user.email}">
+                Update
+              </button>
+              <button class="btn btn-danger delete-btn" 
+                data-bs-toggle="modal" 
+                data-bs-target="#deleteModal" 
+                data-id="${user.id}">
+                Delete
+              </button>
+            </td>
+          `;
+          userTable.querySelector("tbody").appendChild(row);
+
+          // Attach event listeners
+          row
+            .querySelector(".update-btn")
+            .addEventListener("click", handleUpdateModal);
+          row
+            .querySelector(".delete-btn")
+            .addEventListener("click", handleDeleteModal);
+        };
+
+        const handleUpdateModal = (event) => {
+          const button = event.target;
+          document.getElementById("update-id").value =
+            button.getAttribute("data-id");
+          document.getElementById("update-name").value =
+            button.getAttribute("data-name");
+          document.getElementById("update-email").value =
+            button.getAttribute("data-email");
+        };
+
+        const handleDeleteModal = (event) => {
+          const button = event.target;
+          document.getElementById("delete-id").value =
+            button.getAttribute("data-id");
+        };
+
+        const updateModal = new bootstrap.Modal(
+          document.getElementById("updateModal")
+        );
+        const deleteModal = new bootstrap.Modal(
+          document.getElementById("deleteModal")
+        );
+
+        document
+          .getElementById("user-form")
+          .addEventListener("submit", (event) => {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+
+            fetch("/api/users", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email }),
+            })
+              .then((response) => response.json())
+              .then((newUser) => {
+                addUserRow(newUser);
+                document.getElementById("user-form").reset();
+              })
+              .catch((error) => console.error("Error adding user:", error));
+          });
+
+        document
+          .getElementById("update-form")
+          .addEventListener("submit", (event) => {
+            event.preventDefault();
+            const id = document.getElementById("update-id").value;
+            const name = document.getElementById("update-name").value;
+            const email = document.getElementById("update-email").value;
+
+            fetch(`/api/users/${id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email }),
+            })
+              .then((response) => response.json())
+              .then(() => fetchUsers())
+              .then(updateModal.hide())
+              .catch((error) => console.error("Error updating user:", error));
+          });
+
+        document
+          .getElementById("delete-confirm")
+          .addEventListener("click", () => {
+            const id = document.getElementById("delete-id").value;
+            fetch(`/api/users/${id}`, { method: "DELETE" })
+              .then(() => fetchUsers())
+              .then(deleteModal.hide())
+              .catch((error) => console.error("Error deleting user:", error));
+          });
+
+        fetchUsers(); // Initial fetch
+      });
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">Spring Web</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="/features">Features</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="/contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container my-4">
+      <h1 class="text-center">Features</h1>
+      <h2>Create a New User</h2>
+      <form id="user-form" class="d-flex gap-2 mb-4">
+        <input
+          type="text"
+          id="name"
+          placeholder="Name"
+          required
+          class="form-control"
+        />
+        <input
+          type="email"
+          id="email"
+          placeholder="Email"
+          required
+          class="form-control"
+        />
+        <button type="submit" class="btn btn-primary rounded">Create</button>
+      </form>
+
+      <h3>User List</h3>
+      <table class="table table-bordered" id="user-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Update User</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="update-form">
+              <div class="mb-3">
+                <label for="update-name" class="form-label">Name</label>
+                <input
+                  type="text"
+                  id="update-name"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="update-email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  id="update-email"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <input type="hidden" id="update-id" />
+              <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Deletion</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this user?
+            <input type="hidden" id="delete-id" />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="delete-confirm">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
