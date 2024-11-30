@@ -28,17 +28,17 @@ public class UserService {
 
     public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);  // Delete the user from the database
+            userRepository.deleteById(id); 
             return true;
         }
-        return false;  // User not found
+        return false; 
     }
 
     public User updateUser(Long id, User userDetails) {
         return userRepository.findById(id).map(user -> {
             user.setName(userDetails.getName());
             user.setEmail(userDetails.getEmail());
-            return userRepository.save(user); // Save the updated user
-        }).orElse(null); // Return null if the user doesn't exist
+            return userRepository.save(user);
+        }).orElse(null); 
     }
 }

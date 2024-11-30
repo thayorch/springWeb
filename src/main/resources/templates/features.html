@@ -23,7 +23,7 @@
           fetch("/api/users")
             .then((response) => response.json())
             .then((data) => {
-              userTable.querySelector("tbody").innerHTML = ""; // Clear existing rows
+              userTable.querySelector("tbody").innerHTML = "";
               data.forEach((user) => addUserRow(user));
             })
             .catch((error) => console.error("Error fetching users:", error));
@@ -53,7 +53,6 @@
           `;
           userTable.querySelector("tbody").appendChild(row);
 
-          // Attach event listeners
           row
             .querySelector(".update-btn")
             .addEventListener("click", handleUpdateModal);
@@ -201,7 +200,6 @@
       </table>
     </div>
 
-    <!-- Update Modal -->
     <div class="modal fade" id="updateModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
